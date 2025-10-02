@@ -1,7 +1,7 @@
-import React, {useState} from "react";
+import React, {useRef, useState} from "react";
 import "./styles/App.css";
 import PostList from "./components/PostList";
-
+import PostForm from "./components/PostForm";
 
 function App() {
 
@@ -11,9 +11,14 @@ function App() {
     {id: 3, title: "JS3", body: "description3",},
   ])
 
+  const createPost = (newPost) => {
+    setPosts([...posts, newPost])
+  }
+
   return (
     <div className="App">
-      <PostList posts = {posts} title = {"Посты постики"}/>
+      <PostForm create={createPost}/>
+      <PostList posts={posts} title={"Посты постики"}/>
     </div>
   );
 }
