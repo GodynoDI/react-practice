@@ -1,4 +1,4 @@
-import React, {useState, useMemo} from "react";
+import React, {useState, useMemo, useEffect} from "react";
 import "./styles/App.css";
 import PostList from "./components/PostList";
 import PostForm from "./components/PostForm";
@@ -6,12 +6,23 @@ import PostFilter from "./components/PostFilter";
 import MyModal from "./components/UI/modal/MyModal";
 import MyButton from "./components/UI/button/MyButton";
 import {usePosts} from "./hooks/usePosts";
+import PostService from "./API/PostService";
+import Loader from "./components/UI/loader/Loader";
+import {useFetching} from "./hooks/useFetching";
 
 function App() {
   const [posts, setPosts] = useState([]);
   const [filter, setFilter] = useState({sort: '', query: '',});
   const [modal, setModal] = useState(false);
+  const [fetchPosts, isPostsLoading, postError] = useFetching(async () => {
+    const posts = await PostService.getAll();
+    setPosts(posts);
+  })
   const sortedAndSearchedPosts = usePosts(posts, filter.sort, filter.query);
+
+  useEffect(() => {
+    fetchPosts();
+  }, [filter]);
 
   const createPost = (newPost) => {
     setPosts([...posts, newPost]);
@@ -32,9 +43,14 @@ function App() {
       </MyModal>
       <hr style={{margin: "15px 0",}}/>
       <PostFilter filter={filter} setFilter={setFilter}/>
-      {sortedAndSearchedPosts.length !== 0
+      {postError && (
+        <h1>Ошибка! {postError}</h1>
+      )}
+      {isPostsLoading
+        ? <Loader/>
+        : sortedAndSearchedPosts.length !== 0
           ? <PostList remove={removePost} posts={sortedAndSearchedPosts} title={"Посты постики"}/>
-          : <h1 style={{textAlign: 'center',}}>Посты не найдены</h1>}
+          : <h1>Посты не найдены</h1>}
     </div>
   );
 }
